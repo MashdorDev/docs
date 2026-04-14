@@ -8,7 +8,7 @@ and this project adheres to
 
 ### Added
 
-- ✨(backend) create a dedicated endpoint to update document content 
+- ✨(backend) create a dedicated endpoint to update document content
 - ⚡️(backend) stream s3 file content with a dedicated endpoint
 
 ### Changed
@@ -32,6 +32,7 @@ and this project adheres to
 - 🐛(backend) load jwks url when OIDC_RS_PRIVATE_KEY_STR is set
 - 🐛(backend) Prevent moving document to its own descendant or self #2208
 - 🐛(backend) return 400 when restoring a non-deleted document #2225
+- 🐛(frontend) sanitize pasted and dropped content in document title #2210
 
 ### Removed
 
