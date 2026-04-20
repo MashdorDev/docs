@@ -21,6 +21,7 @@ and this project adheres to
 
 ### Fixed
 
+- 💬(frontend) add missing link in onboarding description #2233
 - 🚸(frontend) redirect on current url tab after 401 #2197
 - 🐛(frontend) abort check media status unmount #2194
 - ✨(backend) order pinned documents by last updated at #2028
