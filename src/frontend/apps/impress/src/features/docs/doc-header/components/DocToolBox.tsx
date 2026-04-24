@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { css } from 'styled-components';
 
 import AddLinkSVG from '@/assets/icons/ui-kit/add_link.svg';
+import CoPresentSVG from '@/assets/icons/ui-kit/co_present.svg';
 import ContentCopySVG from '@/assets/icons/ui-kit/content_copy.svg';
 import DeleteSVG from '@/assets/icons/ui-kit/delete.svg';
 import DownloadSVG from '@/assets/icons/ui-kit/download.svg';
@@ -79,6 +80,14 @@ const ModalExport =
       )
     : null;
 
+const PresenterOverlay = dynamic(
+  () =>
+    import('@/docs/doc-presenter').then((mod) => ({
+      default: mod.PresenterOverlay,
+    })),
+  { ssr: false },
+);
+
 interface DocToolBoxProps {
   doc: Doc;
 }
@@ -93,6 +102,7 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
 
   const [isModalRemoveOpen, setIsModalRemoveOpen] = useState(false);
   const [isModalExportOpen, setIsModalExportOpen] = useState(false);
+  const [isPresenterOpen, setIsPresenterOpen] = useState(false);
   const selectHistoryModal = useModal();
   const modalShare = useModal();
 
@@ -175,6 +185,15 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
       },
       showSeparator: true,
       show: !emoji && doc.abilities.partial_update && !isTopRoot,
+    },
+    {
+      label: t('Present'),
+      icon: <CoPresentSVG width={24} height={24} aria-hidden="true" />,
+      callback: () => {
+        setIsPresenterOpen(true);
+      },
+      show: !doc.deleted_at && !isSmallMobile,
+      testId: `docs-actions-present-${doc.id}`,
     },
     {
       label: t('Copy link'),
@@ -318,6 +337,15 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
             restoreFocus();
           }}
           doc={doc}
+        />
+      )}
+      {isPresenterOpen && (
+        <PresenterOverlay
+          doc={doc}
+          onClose={() => {
+            setIsPresenterOpen(false);
+            restoreFocus();
+          }}
         />
       )}
     </Box>
