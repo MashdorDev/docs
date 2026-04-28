@@ -15,7 +15,6 @@ import { useCreateBlockNote } from '@blocknote/react';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { css } from 'styled-components';
 import type { Awareness } from 'y-protocols/awareness';
 import * as Y from 'yjs';
 
@@ -42,7 +41,7 @@ import { randomColor } from '../utils';
 import BlockNoteAI from './AI';
 import { BlockNoteSuggestionMenu } from './BlockNoteSuggestionMenu';
 import { BlockNoteToolbar } from './BlockNoteToolBar/BlockNoteToolbar';
-import { cssComments, useComments } from './comments/';
+import { DocsCommentsStyle, useComments } from './comments/';
 import {
   AccessibleImageBlock,
   CalloutBlock,
@@ -260,14 +259,12 @@ export const BlockNoteEditor = ({ doc, provider }: BlockNoteEditorProps) => {
   }, [setEditor, editor]);
 
   return (
-    <Box
-      ref={refEditorContainer}
-      $height="100%"
-      $css={css`
-        ${cssComments(showComments, currentUserAvatarUrl)}
-      `}
-    >
+    <Box ref={refEditorContainer} $height="100%">
       <DocsEditorStyle />
+      <DocsCommentsStyle
+        canSeeComment={canSeeComment}
+        currentUserAvatarUrl={currentUserAvatarUrl}
+      />
       {errorAttachment && (
         <Box $margin={{ bottom: 'big', top: 'none', horizontal: 'large' }}>
           <TextErrors
@@ -351,12 +348,9 @@ export const BlockNoteReader = ({
   useHeadings(editor);
 
   return (
-    <Box
-      $css={css`
-        ${cssComments(false)}
-      `}
-    >
+    <Box>
       <DocsEditorStyle />
+      <DocsCommentsStyle canSeeComment={false} />
       <BlockNoteView
         className="--docs--main-editor"
         editor={editor}

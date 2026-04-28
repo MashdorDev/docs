@@ -1,11 +1,11 @@
-import { css } from 'styled-components';
+import { createGlobalStyle, css } from 'styled-components';
 
-export const cssComments = (
-  canSeeComment: boolean,
-  currentUserAvatarUrl?: string,
-) => css`
-  & .--docs--main-editor,
-  & .--docs--main-editor .ProseMirror {
+export const DocsCommentsStyle = createGlobalStyle<{
+  canSeeComment: boolean;
+  currentUserAvatarUrl?: string;
+}>`
+  .--docs--main-editor,
+  .--docs--main-editor .ProseMirror {
     // Comments marks in the editor
     .bn-editor {
       // Resets blocknote comments styles
@@ -14,30 +14,31 @@ export const cssComments = (
         background-color: transparent;
       }
 
-      ${canSeeComment &&
-      css`
-        .bn-thread-mark:not([data-orphan='true']) {
-          background-color: color-mix(
-            in srgb,
-            var(--c--contextuals--background--palette--yellow--tertiary) 40%,
-            transparent
-          );
-          border-bottom: 2px solid
-            var(--c--contextuals--background--palette--yellow--secondary);
-
-          mix-blend-mode: multiply;
-
-          transition:
-            background-color var(--c--globals--transitions--duration),
-            border-bottom-color var(--c--globals--transitions--duration);
-
-          &:has(.bn-thread-mark-selected) {
-            background-color: var(
-              --c--contextuals--background--palette--yellow--tertiary
+      ${({ canSeeComment }) =>
+        canSeeComment &&
+        css`
+          .bn-thread-mark:not([data-orphan='true']) {
+            background-color: color-mix(
+              in srgb,
+              var(--c--contextuals--background--palette--yellow--tertiary) 40%,
+              transparent
             );
+            border-bottom: 2px solid
+              var(--c--contextuals--background--palette--yellow--secondary);
+
+            mix-blend-mode: multiply;
+
+            transition:
+              background-color var(--c--globals--transitions--duration),
+              border-bottom-color var(--c--globals--transitions--duration);
+
+            &:has(.bn-thread-mark-selected) {
+              background-color: var(
+                --c--contextuals--background--palette--yellow--tertiary
+              );
+            }
           }
-        }
-      `}
+        `}
 
       [data-show-selection] {
         color: HighlightText;
@@ -61,7 +62,10 @@ export const cssComments = (
       margin-right: 20px;
       gap: 0;
       overflow: auto;
-      font-family: var(--c--globals--font--families--base);
+
+      .bn-default-styles {
+        font-family: var(--c--globals--font--families--base);
+      }
 
       .bn-block {
         font-size: 14px;
@@ -189,7 +193,7 @@ export const cssComments = (
         flex-direction: row;
         gap: 10px;
 
-        .bn-root.bn-comment-editor {
+        .bn-container.bn-comment-editor {
           min-width: 0;
         }
 
@@ -198,9 +202,8 @@ export const cssComments = (
           width: 26px;
           height: 26px;
           flex: 0 0 26px;
-          background-image: ${currentUserAvatarUrl
-            ? `url("${currentUserAvatarUrl}")`
-            : 'none'};
+          background-image: ${({ currentUserAvatarUrl }) =>
+            currentUserAvatarUrl ? `url("${currentUserAvatarUrl}")` : 'none'};
           background-position: center;
           background-repeat: no-repeat;
           background-size: cover;
@@ -242,7 +245,7 @@ export const cssComments = (
       &:not(.selected) {
         gap: 0.5rem;
 
-        .bn-root.bn-comment-editor {
+        .bn-container.bn-comment-editor {
           min-width: 0;
 
           .ProseMirror.bn-editor {
