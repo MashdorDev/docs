@@ -22,24 +22,6 @@ export const DocsEditorStyle = createGlobalStyle`
     --bn-colors-side-menu: var(
       --c--contextuals--content--semantic--neutral--tertiary
     );
-    [data-content-type='heading'] {
-      --level: 1.875rem;
-      &[data-level='2'] {
-        --level: 1.5rem;
-      }
-      &[data-level='3'] {
-        --level: 1.25rem;
-      }
-      &[data-level='4'] {
-        --level: 1.125rem;
-      }
-      &[data-level='5'] {
-        --level: 1rem;
-      }
-      &[data-level='6'] {
-        --level: 0.875rem;
-      }
-    }
 
     /**
     * Ensure long placeholder text is truncated with ellipsis
@@ -105,18 +87,6 @@ export const DocsEditorStyle = createGlobalStyle`
     /**
     * Side menu
     */
-    .bn-side-menu[data-block-type='heading'][data-level='1'] {
-      height: 54px;
-    }
-    .bn-side-menu[data-block-type='heading'][data-level='2'] {
-      height: 43px;
-    }
-    .bn-side-menu[data-block-type='heading'][data-level='3'] {
-      height: 35px;
-    }
-    .bn-side-menu[data-block-type='divider'] {
-      height: 38px;
-    }
     .bn-side-menu .mantine-UnstyledButton-root svg {
       color: var(
         --c--contextuals--content--semantic--neutral--tertiary
@@ -181,6 +151,9 @@ export const DocsEditorStyle = createGlobalStyle`
       width: 100%;
       border: 1px solid #d3d2cf;
     }
+    .bn-side-menu[data-block-type='divider'] {
+      height: 38px;
+    }
 
     /**
     * Checklist items
@@ -218,8 +191,50 @@ export const DocsEditorStyle = createGlobalStyle`
       * Headings
       * Ensure consistent spacing between headings and paragraphs
     */
+    [data-content-type='heading'] {
+      --level: 1.875rem;
+      &[data-level='2'] {
+        --level: 1.5rem;
+      }
+      &[data-level='3'] {
+        --level: 1.25rem;
+      }
+      &[data-level='4'] {
+        --level: 1.125rem;
+      }
+      &[data-level='5'] {
+        --level: 1rem;
+      }
+      &[data-level='6'] {
+        --level: 0.875rem;
+      }
+    }
+    .bn-side-menu[data-block-type='heading'][data-level='1'] {
+      height: 54px;
+    }
+    .bn-side-menu[data-block-type='heading'][data-level='2'] {
+      height: 43px;
+    }
+    .bn-side-menu[data-block-type='heading'][data-level='3'] {
+      height: 35px;
+    }
     & .bn-default-styles h1 {
       font-size: 1.875rem;
+    }
+    & .bn-default-styles h2 {
+      font-size: 1.5rem;
+    }
+    & .bn-default-styles h3 {
+      font-size: 1.25rem;
+    }
+    & .bn-default-styles h4 {
+      font-size: 1.125rem;
+    }
+    & .bn-default-styles h5 {
+      font-size: 1rem;
+    }
+    & .bn-default-styles h6 {
+      font-size: 0.875rem;
     }
     & .bn-block-outer:not(:first-child) {
       &:has(h1) {
