@@ -150,7 +150,7 @@ export const cssComments = (
         }
 
         // Actions button edit comment
-        .bn-container + .bn-comment-actions-wrapper {
+        .bn-root + .bn-comment-actions-wrapper {
           .bn-comment-actions {
             flex-direction: row-reverse;
             background: none;
@@ -192,7 +192,7 @@ export const cssComments = (
         flex-direction: row;
         gap: 10px;
 
-        .bn-container.bn-comment-editor {
+        .bn-root.bn-comment-editor {
           min-width: 0;
         }
 
@@ -245,7 +245,7 @@ export const cssComments = (
       &:not(.selected) {
         gap: 0.5rem;
 
-        .bn-container.bn-comment-editor {
+        .bn-root.bn-comment-editor {
           min-width: 0;
 
           .ProseMirror.bn-editor {

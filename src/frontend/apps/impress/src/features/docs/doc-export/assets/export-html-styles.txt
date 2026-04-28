@@ -97,6 +97,8 @@ p {
 
 .bn-inline-content {
   line-height: 24px;
+  hyphens: none;
+  overflow-wrap: break-word;
 }
 
 /* Links */
