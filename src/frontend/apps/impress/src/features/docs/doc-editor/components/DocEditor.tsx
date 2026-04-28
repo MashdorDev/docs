@@ -19,6 +19,8 @@ import { useResponsiveStore } from '@/stores';
 
 import { BlockNoteEditor, BlockNoteReader } from './BlockNoteEditor';
 
+const DOCS_EDITOR_CLASS = '--docs--doc-editor';
+
 interface DocEditorContainerProps {
   docHeader: React.ReactNode;
   docEditor: React.ReactNode;
@@ -40,7 +42,7 @@ export const DocEditorContainer = ({
         $maxWidth="868px"
         $width="100%"
         $height="100%"
-        className="--docs--doc-editor"
+        className={DOCS_EDITOR_CLASS}
       >
         <Box
           $padding={{ horizontal: isDesktop ? '54px' : 'base' }}
@@ -130,7 +132,7 @@ export const DocEditor = ({ doc }: DocEditorProps) => {
 
   return (
     <>
-      {isDesktop && <TableContent />}
+      {isDesktop && <TableContent selector={`.${DOCS_EDITOR_CLASS}`} />}
       <DocEditorContainer
         docHeader={<DocHeader doc={doc} />}
         docEditor={

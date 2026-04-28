@@ -61,10 +61,7 @@ export const cssComments = (
       margin-right: 20px;
       gap: 0;
       overflow: auto;
-
-      .bn-default-styles {
-        font-family: var(--c--globals--font--families--base);
-      }
+      font-family: var(--c--globals--font--families--base);
 
       .bn-block {
         font-size: 14px;

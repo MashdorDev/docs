@@ -14,7 +14,7 @@ import { MAIN_LAYOUT_ID } from '@/layouts/conf';
 
 import { Heading } from './Heading';
 
-export const TableContent = () => {
+export const TableContent = ({ selector }: { selector: string }) => {
   const { spacingsTokens, colorsTokens } = useCunninghamTheme();
   const [containerHeight, setContainerHeight] = useState('100vh');
   const { headings } = useHeadingStore();
@@ -27,11 +27,24 @@ export const TableContent = () => {
    * Calculate container height based on the scrollable content
    */
   useEffect(() => {
-    const mainLayout = document.getElementById(MAIN_LAYOUT_ID);
-    if (mainLayout) {
-      setContainerHeight(`${mainLayout.scrollHeight}px`);
+    const layout = document.querySelector<HTMLElement>(selector);
+    if (!layout) {
+      return;
     }
-  }, []);
+
+    const updateHeight = () => {
+      setContainerHeight(`${layout.scrollHeight}px`);
+    };
+
+    updateHeight();
+
+    const observer = new ResizeObserver(updateHeight);
+    observer.observe(layout);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [selector]);
 
   const onOpen = () => {
     setIsOpen(true);

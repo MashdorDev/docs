@@ -35,7 +35,7 @@ import {
   useUploadStatus,
 } from '../hook';
 import { useEditorStore } from '../stores';
-import { cssEditor } from '../styles';
+import { DocsEditorStyle } from '../styles';
 import { DocsBlockNoteEditor } from '../types';
 import { randomColor } from '../utils';
 
@@ -262,11 +262,12 @@ export const BlockNoteEditor = ({ doc, provider }: BlockNoteEditorProps) => {
   return (
     <Box
       ref={refEditorContainer}
+      $height="100%"
       $css={css`
-        ${cssEditor};
         ${cssComments(showComments, currentUserAvatarUrl)}
       `}
     >
+      <DocsEditorStyle />
       {errorAttachment && (
         <Box $margin={{ bottom: 'big', top: 'none', horizontal: 'large' }}>
           <TextErrors
@@ -352,10 +353,10 @@ export const BlockNoteReader = ({
   return (
     <Box
       $css={css`
-        ${cssEditor};
         ${cssComments(false)}
       `}
     >
+      <DocsEditorStyle />
       <BlockNoteView
         className="--docs--main-editor"
         editor={editor}
