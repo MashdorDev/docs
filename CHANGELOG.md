@@ -6,6 +6,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fork
+
+- ✨(frontend) detect and embed YouTube/Vimeo/Loom in video block
+
 ## [v6.0.0] - 2026-10-05
 
 ### Added
