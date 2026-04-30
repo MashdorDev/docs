@@ -10,6 +10,7 @@ and this project adheres to
 
 - ✨(backend) create a dedicated endpoint to update document content 
 - ⚡️(backend) stream s3 file content with a dedicated endpoint
+- ⚡️(frontend) add skeleton on content loading #2254
 - ✨(backend) allow to use new ai feature using mistral sdk
 
 ### Changed

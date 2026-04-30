@@ -501,7 +501,7 @@ test.describe('Doc Header', () => {
       browserName === 'webkit',
       'navigator.clipboard is not working with webkit and playwright',
     );
-    const uuid = await mockedDocument(page, {
+    await mockedDocument(page, {
       abilities: {
         destroy: false, // Means owner
         link_configuration: true,
@@ -522,7 +522,6 @@ test.describe('Doc Header', () => {
       name: 'Share',
       exact: true,
     });
-    await expect(shareButton).toBeVisible();
 
     await shareButton.click();
     await page.getByRole('button', { name: 'Copy link' }).click();
@@ -533,8 +532,8 @@ test.describe('Doc Header', () => {
     );
     const clipboardContent = await handle.jsonValue();
 
-    const origin = await page.evaluate(() => window.location.origin);
-    expect(clipboardContent.trim()).toMatch(`${origin}/docs/${uuid}/`);
+    const url = page.url();
+    expect(clipboardContent.trim()).toMatch(url);
   });
 
   test('it pins a document', async ({ page, browserName }) => {

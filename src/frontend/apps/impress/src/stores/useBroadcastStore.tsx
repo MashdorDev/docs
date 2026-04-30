@@ -47,13 +47,7 @@ export const useBroadcastStore = create<BroadcastState>((set, get) => ({
     });
   },
   getBroadcastProvider: () => {
-    const provider = get().provider;
-    if (!provider) {
-      console.warn('Provider is not defined');
-      return;
-    }
-
-    return provider;
+    return get().provider;
   },
   addTask: (taskLabel, action) => {
     const provider = get().getBroadcastProvider();
@@ -109,5 +103,7 @@ export const useBroadcastStore = create<BroadcastState>((set, get) => ({
     Object.values(get().tasks).forEach(({ task, observer }) => {
       task.unobserve(observer);
     });
+
+    set({ tasks: {}, provider: undefined });
   },
 }));

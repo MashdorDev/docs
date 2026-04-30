@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
 import { useCollaborationUrl } from '@/core/config';
+import { KEY_DOC } from '@/docs/doc-management/api/useDoc';
 import {
   KEY_DOC_CONTENT,
   useDocContent,
@@ -9,8 +10,6 @@ import {
 import { useProviderStore } from '@/docs/doc-management/stores/useProviderStore';
 import { useIsOffline } from '@/features/service-worker/hooks/useOffline';
 import { useBroadcastStore } from '@/stores/useBroadcastStore';
-
-import { KEY_DOC } from '../api';
 
 export const useCollaboration = (room: string) => {
   const collaborationUrl = useCollaborationUrl(room);
