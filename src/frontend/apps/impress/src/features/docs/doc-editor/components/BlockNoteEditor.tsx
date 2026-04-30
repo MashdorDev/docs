@@ -54,7 +54,12 @@ import BlockNoteAI from './AI';
 import { BlockNoteSideMenu } from './BlockNoteSideMenu';
 import { BlockNoteSuggestionMenu } from './BlockNoteSuggestionMenu';
 import { BlockNoteToolbar } from './BlockNoteToolBar/BlockNoteToolbar';
-import { CalloutBlock, PdfBlock, UploadLoaderBlock } from './custom-blocks';
+import {
+  CalloutBlock,
+  PdfBlock,
+  UploadLoaderBlock,
+  VideoBlock,
+} from './custom-blocks';
 const AIMenu = BlockNoteAI?.AIMenu;
 const AIMenuController = BlockNoteAI?.AIMenuController;
 const useAI = BlockNoteAI?.useAI;
@@ -73,6 +78,7 @@ const baseBlockNoteSchema = withPageBreak(
       codeBlock: createCodeBlockSpec(codeBlockOptions),
       pdf: PdfBlock(),
       uploadLoader: UploadLoaderBlock(),
+      video: VideoBlock(),
     },
     inlineContentSpecs: {
       ...defaultInlineContentSpecs,
