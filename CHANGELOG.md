@@ -8,7 +8,7 @@ and this project adheres to
 
 ### Added
 
-- ✨(frontend) detect and embed YouTube/Vimeo/Loom in video block
+- ✨(frontend) detect and embed YouTube/Vimeo/Loom/Dailymotion in video block
 
 ## [v5.7.0] - 2026-09-15
 
