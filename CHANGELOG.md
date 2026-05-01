@@ -8,7 +8,7 @@ and this project adheres to
 
 ### Fork
 
-- ✨(frontend) detect and embed YouTube/Vimeo/Loom in video block
+- ✨(frontend) detect and embed YouTube/Vimeo/Loom/Dailymotion in video block
 
 ## [v6.0.0] - 2026-10-05
 
