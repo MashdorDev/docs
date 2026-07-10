@@ -9,6 +9,7 @@ and this project adheres to
 ### Fork
 
 - ✨(frontend) detect and embed YouTube/Vimeo/Loom/Dailymotion in video block
+- ✨(frontend) add dark / light / system colour-mode switcher
 
 ## [v6.0.0] - 2026-10-05
 
