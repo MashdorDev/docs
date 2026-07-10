@@ -2,7 +2,7 @@ import { UserMenu } from '@gouvfr-lasuite/ui-components';
 import { useTranslation } from 'react-i18next';
 import { createGlobalStyle } from 'styled-components';
 
-import { Box } from '@/components';
+import { Box, ThemeSwitch } from '@/components';
 import { Waffle } from '@/components/Waffle';
 import { ButtonLogin, gotoLogout, useAuth } from '@/features/auth';
 import { HelpMenu } from '@/features/help';
@@ -44,7 +44,10 @@ export const FooterActions = () => {
           <Waffle />
           <ButtonLogin />
         </Box>
-        <HelpMenu />
+        <Box $direction="row" $align="center" $gap="3xs">
+          <ThemeSwitch />
+          <HelpMenu />
+        </Box>
       </Box>
     </>
   );
