@@ -2,7 +2,7 @@ import { UserMenu } from '@gouvfr-lasuite/ui-kit';
 import { useTranslation } from 'react-i18next';
 import { createGlobalStyle } from 'styled-components';
 
-import { Box, SeparatedSection } from '@/components';
+import { Box, SeparatedSection, ThemeSwitch } from '@/components';
 import { Waffle } from '@/components/Waffle';
 import { ButtonLogin } from '@/features/auth';
 import { useAuth } from '@/features/auth/hooks/useAuth';
@@ -43,7 +43,10 @@ export const LeftPanelFooter = () => {
           <Waffle />
           <ButtonLogin />
         </Box>
-        <HelpMenu />
+        <Box $direction="row" $align="center" $gap="0.2rem">
+          <ThemeSwitch />
+          <HelpMenu />
+        </Box>
       </Box>
     </SeparatedSection>
   );
