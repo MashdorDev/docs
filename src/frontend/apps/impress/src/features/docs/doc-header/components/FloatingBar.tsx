@@ -44,8 +44,8 @@ export const FloatingBar = () => {
         z-index: -1;
         background: linear-gradient(
           180deg,
-          #fff 0%,
-          rgba(255, 255, 255, 0) 100%
+          var(--c--contextuals--background--surface--primary) 0%,
+          transparent 100%
         );
         backdrop-filter: blur(1px);
         -webkit-backdrop-filter: blur(1px);
