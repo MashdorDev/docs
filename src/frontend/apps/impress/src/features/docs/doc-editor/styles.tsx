@@ -16,6 +16,9 @@ export const cssEditor = css`
   * Token Mantime
   */
   & > .bn-container {
+    /* Let the editor share the page background instead of BlockNote's own
+       (Mantine) light/dark surface, so the canvas matches the app in any theme. */
+    --bn-colors-editor-background: transparent;
     --bn-colors-editor-text: var(
       --c--contextuals--content--semantic--neutral--primary
     );
