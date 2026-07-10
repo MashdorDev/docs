@@ -12,6 +12,7 @@ import { useResponsiveStore } from '@/stores';
 
 import { HEADER_HEIGHT } from '../conf';
 
+import { ThemeSwitch } from './ThemeSwitch';
 import { Title } from './Title';
 import { Waffle } from './Waffle';
 
@@ -94,6 +95,7 @@ export const Header = () => {
             $direction="row"
           >
             <ButtonLogin />
+            <ThemeSwitch />
             <LanguagePicker />
             <Waffle />
           </Box>
