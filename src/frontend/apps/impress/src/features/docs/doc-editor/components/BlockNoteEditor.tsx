@@ -114,7 +114,8 @@ interface BlockNoteEditorProps {
 export const BlockNoteEditor = ({ doc, provider }: BlockNoteEditorProps) => {
   const { user } = useAuth();
   const { setEditor } = useEditorStore();
-  const { themeTokens } = useCunninghamTheme();
+  const { themeTokens, theme } = useCunninghamTheme();
+  const editorTheme = theme === 'dark' ? 'dark' : 'light';
   const refEditorContainer = useRef<HTMLDivElement>(null);
   useSaveDoc(doc.id, provider.document);
 
@@ -343,7 +344,7 @@ export const BlockNoteEditor = ({ doc, provider }: BlockNoteEditorProps) => {
         formattingToolbar={false}
         slashMenu={false}
         sideMenu={false}
-        theme="light"
+        theme={editorTheme}
         comments={false}
         aria-label={t('Document editor')}
         // To not clipped the floating part in the editor area
@@ -383,6 +384,8 @@ export const BlockNoteReader = ({
 }: BlockNoteReaderProps) => {
   const { user } = useAuth();
   const { setEditor } = useEditorStore();
+  const { theme } = useCunninghamTheme();
+  const editorTheme = theme === 'dark' ? 'dark' : 'light';
   const { threadStore } = useComments(docId, false, user);
   const editor = useCreateBlockNote(
     withCollaboration({
@@ -435,7 +438,7 @@ export const BlockNoteReader = ({
         className="--docs--main-editor"
         editor={editor}
         editable={false}
-        theme="light"
+        theme={editorTheme}
         formattingToolbar={false}
         slashMenu={false}
         comments={false}
