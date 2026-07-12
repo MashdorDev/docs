@@ -7,6 +7,7 @@ import { Box, HorizontalSeparator, SeparatedSection } from '@/components';
 import { useConfig } from '@/core/config/api/useConfig';
 import { useCunninghamTheme } from '@/cunningham';
 import { ButtonLogin } from '@/features/auth';
+import { ThemeSwitch } from '@/features/header/components/ThemeSwitch';
 import { HEADER_HEIGHT } from '@/features/header/conf';
 import { HelpMenu } from '@/features/help';
 import { LanguagePicker } from '@/features/language';
@@ -132,6 +133,7 @@ const LeftPanelMobile = () => {
               >
                 <HelpMenu colorButton="brand" />
                 <ButtonLogin />
+                <ThemeSwitch />
                 <LanguagePicker />
               </Box>
             </SeparatedSection>
