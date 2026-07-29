@@ -229,7 +229,11 @@ export const cssEditor = css`
   }
 
   & .bn-inline-content code {
-    background-color: gainsboro;
+    /* Was a hardcoded gainsboro, which left near-white text on a near-white
+       chip once the content tokens switched to the dark ramp. */
+    background-color: var(
+      --c--contextuals--background--palette--gray--tertiary
+    );
     padding: 2px;
     border-radius: 4px;
   }
