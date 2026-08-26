@@ -3,6 +3,15 @@ entries:
   docs:
   - apiVersion: v2
     appVersion: latest
+    created: "2026-08-26T23:10:00.279718839Z"
+    digest: c9134512c4ef080326f79c4f43e18915b93edbf22d26612be770069a0ce5259b
+    name: docs
+    type: application
+    urls:
+    - https://MashdorDev.github.io/docs/docs-5.5.0.tgz
+    version: 5.5.0
+  - apiVersion: v2
+    appVersion: latest
     created: "2026-07-10T22:16:10.696411876Z"
     digest: 6d71ef3b06703fe3ff0947a2dbf02541177c351fe9ea627352aa500abc320aac
     name: docs
@@ -577,4 +586,4 @@ entries:
     urls:
     - https://suitenumerique.github.io/docs/docs-0.0.1.tgz
     version: 0.0.1
-generated: "2026-07-10T22:16:10.694386512Z"
+generated: "2026-08-26T23:10:00.277266911Z"
