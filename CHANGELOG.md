@@ -10,6 +10,15 @@ and this project adheres to
 
 - ✨(frontend) detect and embed YouTube/Vimeo/Loom/Dailymotion in video block
 - ✨(frontend) add dark / light / system colour-mode switcher
+- ✨(helm) allow disallowing search engine indexing per instance #2694
+- 🐛(frontend) reduce PostHog volume from web vitals and opt_in spam #2701
+- ✨(backend) expose the attachment max size in the config endpoint #2577
+- ✨(frontend) warn before uploading an attachment over the size limit #2577
+
+### Fixed
+
+- 🐛(export) keep image aspect ratio in PDF columns #2670
+- 🐛(frontend) fix redirect after deleting a document #2706
 
 ## [v5.7.0] - 2026-09-15
 
