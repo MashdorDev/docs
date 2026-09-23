@@ -10,6 +10,9 @@ and this project adheres to
 
 - ✨(frontend) detect and embed YouTube/Vimeo/Loom/Dailymotion in video block
 - ✨(frontend) add dark / light / system colour-mode switcher
+- 🚩(setting) add feature flag on Duplicate with Children #2721
+- 💄(frontend) redesign 404 error standalone page #2696
+- 💄(frontend) redesign 403 access denied page #2720
 - ✨(frontend) duplicate with subdocuments #2584
 - ✨(helm) allow disallowing search engine indexing per instance #2694
 - 🐛(frontend) reduce PostHog volume from web vitals and opt_in spam #2701
