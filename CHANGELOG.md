@@ -10,6 +10,11 @@ and this project adheres to
 
 - ✨(frontend) detect and embed YouTube/Vimeo/Loom/Dailymotion in video block
 - ✨(frontend) add dark / light / system colour-mode switcher
+- 👷(ci) lint, typecheck, build and test the collaboration server (yhub)
+- 👷(ci) check the load-test tooling: swarm, canary, k6 and dashboards
+- 👷(ci) cancel the superseded runs of a pull request
+- ✨(backend) add mention endpoint with cooldown-limited email
+  notification #2447
 - 🚩(setting) add feature flag on Duplicate with Children #2721
 - 💄(frontend) redesign 404 error standalone page #2696
 - 💄(frontend) redesign 403 access denied page #2720
@@ -85,6 +90,7 @@ and this project adheres to
 - 🐛(frontend) open search results in a new tab with ctrl/cmd+click #2719
 - 🐛(docker) pull minio images from pgsty
 - 🐛(backend) retry the duplicate of a document on a tree path collision
+- 🐛(frontend) keep caption and alignment when replacing an image #2730
 - 🐛(frontend) clear callout background on Backspace #2052
 
 - 🐛(export) keep image aspect ratio in PDF columns #2670
