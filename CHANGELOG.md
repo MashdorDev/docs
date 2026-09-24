@@ -100,7 +100,6 @@ and this project adheres to
 - 🐛(backend) retry the duplicate of a document on a tree path collision
 - 🐛(frontend) keep caption and alignment when replacing an image #2730
 - 🐛(frontend) clear callout background on Backspace #2052
-
 - 🐛(export) keep image aspect ratio in PDF columns #2670
 - 🐛(frontend) fix redirect after deleting a document #2706
 - 🐛(frontend) keep documents draggable with a mouse when zoomed #2727
