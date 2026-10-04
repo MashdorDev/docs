@@ -28,6 +28,15 @@ const isDocumentApiUrl = (url: URL) =>
   isApiUrl(url.href) && /.*\/documents\/([a-z0-9-]+)\/$/g.test(url.href);
 
 /**
+ * The OIDC endpoints the browser navigates to during login and logout.
+ */
+const AUTH_PATHNAME =
+  /^\/api\/v[^/]+\/(authenticate|callback|logout|logout-callback)\/$/;
+
+const isAuthUrl = (url: URL) =>
+  isApiUrl(url.href) && AUTH_PATHNAME.test(url.pathname);
+
+/**
  * API routes
  */
 registerRoute(
@@ -143,6 +152,30 @@ registerRoute(
     ],
   }),
   'DELETE',
+);
+
+/**
+ * Login and logout: never from the cache. They go through the identity
+ * provider with redirects that carry a one-time OIDC `state`, and a redirect
+ * replayed from the cache sends a `state` already used: the login or the
+ * logout fails.
+ *
+ * `ApiPlugin` still replays the offline mutations first, while the session is
+ * valid, since the logout ends it. Registered before the catch-all route
+ * below, which would cache them.
+ */
+registerRoute(
+  ({ url }) => isAuthUrl(url),
+  new NetworkOnly({
+    plugins: [
+      new ApiPlugin({
+        type: 'synch',
+        syncManager,
+      }),
+      new OfflinePlugin(),
+    ],
+  }),
+  'GET',
 );
 
 registerRoute(

@@ -95,6 +95,22 @@ and this project adheres to
 
 - 🐛(export) keep image aspect ratio in PDF columns #2670
 - 🐛(frontend) fix redirect after deleting a document #2706
+- 🐛(frontend) keep documents draggable with a mouse when zoomed #2727
+- 📝(docs) fix markdown typo in installation README #2766
+- 🐛(i18n) export locale correctly #2750
+- 🐛(frontend) keep login and logout out of the service worker cache #2771
+
+### Removed
+
+- 🔥(backend) remove the unused `CollaborationService`
+- 💥(backend) remove the `documents/{id}/can-edit/` endpoint
+- 💥(backend) remove the `documents/{id}/content/` endpoint
+- 🔥(backend) remove the document version endpoints.
+- 🔥(backend) remove `Document.content`
+
+### Security
+
+- 🔒️(collaboration) stop read-only users from sharing their cursor
 
 ## [v5.7.0] - 2026-09-15
 
