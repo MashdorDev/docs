@@ -66,6 +66,7 @@ import { BlockNoteToolbar } from './BlockNoteToolBar/BlockNoteToolbar';
 import { DocsSideMenu } from './DocsSideMenu/DocsSideMenu';
 import {
   CalloutBlock,
+  DocChildrenBlock,
   PdfBlock,
   UploadLoaderBlock,
   VideoBlock,
@@ -91,6 +92,7 @@ const baseBlockNoteSchema = withPageBreak(
       callout: CalloutBlock(),
       codeBlock: createSafeCodeBlockSpec(),
       diagram: createReactDiagramBlockSpec(),
+      docChildren: DocChildrenBlock(),
       mathBlock: createReactMathBlockSpec(),
       pdf: PdfBlock(),
       uploadLoader: UploadLoaderBlock(),
