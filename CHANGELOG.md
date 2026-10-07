@@ -12,6 +12,7 @@ and this project adheres to
 - ✨(frontend) detect and embed YouTube/Vimeo/Loom/Dailymotion in video block
 - ✨(frontend) add dark / light / system colour-mode switcher
 - ✨(frontend) link a new sub-doc in its parent doc
+- ✨(frontend) add a /children block listing the sub-docs #2686
 - 👷(ci) lint, typecheck, build and test the collaboration server (yhub)
 - 👷(ci) check the load-test tooling: swarm, canary, k6 and dashboards
 - 👷(ci) cancel the superseded runs of a pull request
