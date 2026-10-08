@@ -8,6 +8,7 @@ and this project adheres to
 
 ### Fork
 
+- ✨(frontend) optionally include the document title in exports
 - ✨(frontend) add a /children block listing the sub-docs #2686
 - ✨(frontend) add instance-configured embed providers to the video block
 - ✨(frontend) detect and embed YouTube/Vimeo/Loom/Dailymotion in video block

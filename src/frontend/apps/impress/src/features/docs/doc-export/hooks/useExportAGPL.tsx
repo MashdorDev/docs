@@ -24,15 +24,16 @@ import { expandDocChildrenBlocks } from '../utils_doc_children';
 export const useExportAGPL = (doc: Doc, editor?: DocsBlockNoteEditor) => {
   const { t } = useTranslation();
 
-  const docToBlob = async (format: string, documentTitle: string) => {
-    if (!editor) {
+  const docToBlob = async (
+    format: string,
+    documentTitle: string,
+    blocks = editor?.document,
+  ) => {
+    if (!editor || !blocks) {
       return;
     }
 
-    const exportDocument = await expandDocChildrenBlocks(
-      editor.document,
-      doc.id,
-    );
+    const exportDocument = await expandDocChildrenBlocks(blocks, doc.id);
     const interlinkTitles = await resolveInterlinkTitles(exportDocument);
     let blobExport: Blob | undefined = undefined;
     if (format === 'pdf') {

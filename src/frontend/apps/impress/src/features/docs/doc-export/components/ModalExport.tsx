@@ -1,5 +1,6 @@
 import {
   Button,
+  Checkbox,
   Loader,
   Modal,
   ModalSize,
@@ -18,6 +19,7 @@ import { useEditorStore } from '@/docs/doc-editor/stores/useEditorStore';
 import { type Doc, useTrans } from '@/docs/doc-management';
 import { useToast } from '@/hooks';
 import { fallbackLng } from '@/i18n/config';
+import { safeLocalStorage } from '@/utils/storages';
 
 import ModulesExport from '../hooks/';
 import { downloadFile, getExportFilename } from '../utils';
@@ -41,6 +43,18 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
   const { toast } = useToast();
   const { editor } = useEditorStore();
   const [isExporting, setIsExporting] = useState(false);
+  // Remembered per doc. Without a choice yet, add the title only when the doc
+  // does not open with its own top-level heading.
+  const withTitleKey = `export-with-title-${doc.id}`;
+  const [withTitle, setWithTitle] = useState(() => {
+    const stored = safeLocalStorage.getItem(withTitleKey);
+    if (stored !== null) {
+      return stored === 'true';
+    }
+    return !editor?.document.some(
+      (block) => block.type === 'heading' && block.props.level === 1,
+    );
+  });
   const { untitledDocument } = useTrans();
   const mediaUrl = useMediaUrl();
   const selectRef = useRef<HTMLDivElement>(null);
@@ -105,12 +119,33 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
       const filename = getExportFilename(documentTitle);
       let downloadExtension = format === 'markdown' ? 'md' : format;
 
-      let blobExport = await exportAGPL?.docToBlob(format, documentTitle);
+      const titleBlock = {
+        id: `export-title-${doc.id}`,
+        type: 'heading',
+        props: {
+          level: 1,
+          isToggleable: false,
+          textColor: 'default',
+          backgroundColor: 'default',
+          textAlignment: 'left',
+        },
+        content: [{ type: 'text', text: documentTitle, styles: {} }],
+        children: [],
+      } as (typeof editor.document)[number];
+      const sourceBlocks = withTitle
+        ? [titleBlock, ...editor.document]
+        : editor.document;
+
+      let blobExport = await exportAGPL?.docToBlob(
+        format,
+        documentTitle,
+        sourceBlocks,
+      );
 
       if (!blobExport && format === 'markdown') {
         const zip = new JSZip();
         const blocks = await expandDocChildrenBlocks(
-          structuredClone(editor.document),
+          structuredClone(sourceBlocks),
           doc.id,
         );
 
@@ -136,7 +171,7 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
       if (!blobExport && format === 'html') {
         // Use BlockNote "full HTML" export so that we stay closer to the editor rendering.
         const fullHtml = editor.blocksToFullHTML(
-          await expandDocChildrenBlocks(editor.document, doc.id),
+          await expandDocChildrenBlocks(sourceBlocks, doc.id),
         );
 
         // Parse HTML and fetch media so that we can package a fully offline HTML document in a ZIP.
@@ -145,7 +180,10 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
 
         const zip = new JSZip();
 
-        improveHtmlAccessibility(parsedDocument, documentTitle);
+        improveHtmlAccessibility(
+          parsedDocument,
+          withTitle ? documentTitle : null,
+        );
         await addMediaFilesToZip(parsedDocument, zip, mediaUrl);
 
         const lang = i18next.language || fallbackLng;
@@ -281,6 +319,14 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
             onChange={(options) => setFormat(options.target.value as string)}
           />
         </Box>
+        <Checkbox
+          label={t('Include the document title')}
+          checked={withTitle}
+          onChange={(e) => {
+            setWithTitle(e.target.checked);
+            safeLocalStorage.setItem(withTitleKey, String(e.target.checked));
+          }}
+        />
 
         {isExporting && (
           <Box
