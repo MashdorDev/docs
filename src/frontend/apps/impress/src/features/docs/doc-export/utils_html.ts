@@ -130,7 +130,8 @@ export const generateHtmlDocument = (
  */
 export const improveHtmlAccessibility = (
   parsedDocument: Document,
-  documentTitle: string,
+  // null when the user chose to export without the title: none is added then.
+  documentTitle: string | null,
 ) => {
   const body = parsedDocument.body;
   if (!body) {
@@ -382,12 +383,14 @@ export const improveHtmlAccessibility = (
   });
 
   // 8) Wrap content in an article with a title landmark if none exists
-  const existingH1 = body.querySelector('h1');
-  if (!existingH1) {
-    const titleHeading = parsedDocument.createElement('h1');
-    titleHeading.id = 'doc-title';
+  let titleHeading = body.querySelector('h1');
+  if (!titleHeading && documentTitle !== null) {
+    titleHeading = parsedDocument.createElement('h1');
     titleHeading.textContent = documentTitle;
     body.insertBefore(titleHeading, body.firstChild);
+  }
+  if (titleHeading && !titleHeading.id) {
+    titleHeading.id = 'doc-title';
   }
 
   // If there is no article, group the body content inside one for better semantics.
@@ -395,7 +398,9 @@ export const improveHtmlAccessibility = (
   if (!hasArticle) {
     const article = parsedDocument.createElement('article');
     article.setAttribute('role', 'document');
-    article.setAttribute('aria-labelledby', 'doc-title');
+    if (titleHeading) {
+      article.setAttribute('aria-labelledby', titleHeading.id);
+    }
     while (body.firstChild) {
       article.appendChild(body.firstChild);
     }

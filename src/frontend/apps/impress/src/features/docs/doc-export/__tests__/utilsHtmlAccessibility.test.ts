@@ -264,4 +264,27 @@ describe('improveHtmlAccessibility', () => {
     expect(article!.getAttribute('role')).toBe('document');
     expect(article!.getAttribute('aria-labelledby')).toBe('doc-title');
   });
+
+  it('adds no title when exported without one', () => {
+    const doc = parse(`<p>Hello</p>`);
+
+    improveHtmlAccessibility(doc, null);
+
+    expect(doc.querySelector('h1')).toBeNull();
+    expect(doc.querySelector('article')!.hasAttribute('aria-labelledby')).toBe(
+      false,
+    );
+  });
+
+  it('labels the article with the heading the export already has', () => {
+    const doc = parse(`<h1>Exported title</h1><p>Hello</p>`);
+
+    improveHtmlAccessibility(doc, null);
+
+    expect(doc.querySelectorAll('h1')).toHaveLength(1);
+    expect(doc.querySelector('h1')!.id).toBe('doc-title');
+    expect(doc.querySelector('article')!.getAttribute('aria-labelledby')).toBe(
+      'doc-title',
+    );
+  });
 });
