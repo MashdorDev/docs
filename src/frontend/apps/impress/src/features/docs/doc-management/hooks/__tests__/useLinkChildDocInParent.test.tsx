@@ -108,4 +108,24 @@ describe('useLinkChildDocInParent', () => {
 
     expect(editor.insertInlineContent).not.toHaveBeenCalled();
   });
+
+  it('does nothing when the parent already lists its sub-docs', async () => {
+    const editor = mockEditor([
+      { id: 'b1', type: 'paragraph', content: [] },
+      {
+        id: 'b2',
+        type: 'paragraph',
+        content: [],
+        children: [{ id: 'b3', type: 'docChildren', content: undefined }],
+      },
+    ]);
+    const { result } = renderHook(() => useLinkChildDocInParent());
+
+    await result.current('parent-id', 'child-id', 'end');
+    await result.current('parent-id', 'child-id', 'cursor');
+
+    expect(editor.updateBlock).not.toHaveBeenCalled();
+    expect(editor.insertBlocks).not.toHaveBeenCalled();
+    expect(editor.insertInlineContent).not.toHaveBeenCalled();
+  });
 });
