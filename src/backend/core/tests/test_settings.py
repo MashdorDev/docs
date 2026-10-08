@@ -2,6 +2,7 @@
 Unit tests for the User model
 """
 
+import json
 import os
 import tempfile
 
@@ -270,13 +271,27 @@ def test_embed_providers_value_parses_json():
     "raw",
     [
         '{"id": "grist"}',
-        '[{"id": "grist", "pattern": "x"}]',
-        '[{"id": "grist", "pattern": "x", "src": "http://grist.example.com/{1}"}]',
-        '[{"id": "grist", "pattern": "(", "src": "https://grist.example.com/{1}"}]',
         "not json",
     ],
 )
-def test_embed_providers_value_rejects_bad_entries(raw):
-    """A bad provider stops the startup instead of never matching."""
-    with pytest.raises(ValueError):
-        EmbedProvidersValue([]).to_python(raw)
+def test_embed_providers_value_ignores_a_bad_value(raw):
+    """A broken value is dropped instead of stopping the startup."""
+    assert EmbedProvidersValue([]).to_python(raw) == []
+
+
+def test_embed_providers_value_drops_only_the_bad_entries():
+    """Valid providers survive next to broken ones."""
+    good = {
+        "id": "ok",
+        "pattern": "^https://ok[.]example/(\\w+)",
+        "src": "https://ok.example/{1}",
+    }
+    raw = json.dumps(
+        [
+            good,
+            {"id": "grist", "pattern": "x"},
+            {"id": "http", "pattern": "x", "src": "http://x.example/{1}"},
+            {"id": "broken", "pattern": "(", "src": "https://x.example/{1}"},
+        ]
+    )
+    assert EmbedProvidersValue([]).to_python(raw) == [good]

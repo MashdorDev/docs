@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 import json
+import logging
 import os
 import re
 import stat
@@ -54,42 +55,54 @@ def get_release():
         return "NA"  # Default: not available
 
 
+logger = logging.getLogger(__name__)
+
+
 class EmbedProvidersValue(values.Value):
     """
     Extra embed providers for the video block, as a JSON list of
     {"id", "pattern", "src"}: "pattern" is a regex matched against the pasted
     URL and "src" an https iframe URL where {1}..{9} take the regex groups.
 
-    A bad entry stops the startup: an embed that silently never matches is
-    harder to notice than a server that does not boot.
+    A bad value is logged and dropped, never fatal: a typo in an optional
+    embed list took the whole instance down once (2026-10-08).
     """
 
     def to_python(self, value):
         try:
             providers = json.loads(value) if isinstance(value, str) else value
         except json.JSONDecodeError as err:
-            raise ValueError(f"EMBED_PROVIDERS is not valid JSON: {err}") from err
+            logger.error("EMBED_PROVIDERS ignored, not valid JSON: %s", err)
+            return []
         if not isinstance(providers, list):
-            raise ValueError("EMBED_PROVIDERS must be a JSON list")
-        for provider in providers:
-            if not isinstance(provider, dict) or not all(
-                isinstance(provider.get(key), str) and provider[key]
-                for key in ("id", "pattern", "src")
-            ):
-                raise ValueError(
-                    f"EMBED_PROVIDERS entries need a string id, pattern and src: {provider!r}"
-                )
-            if not provider["src"].startswith("https://"):
-                raise ValueError(
-                    f"EMBED_PROVIDERS src must be an https URL: {provider['id']}"
-                )
-            try:
-                re.compile(provider["pattern"])
-            except re.error as err:
-                raise ValueError(
-                    f"EMBED_PROVIDERS pattern does not compile: {provider['id']}"
-                ) from err
-        return providers
+            logger.error("EMBED_PROVIDERS ignored, not a JSON list")
+            return []
+        return [provider for provider in providers if self._is_valid(provider)]
+
+    @staticmethod
+    def _is_valid(provider):
+        if not isinstance(provider, dict) or not all(
+            isinstance(provider.get(key), str) and provider[key]
+            for key in ("id", "pattern", "src")
+        ):
+            logger.error(
+                "EMBED_PROVIDERS entry ignored, needs id, pattern and src: %r", provider
+            )
+            return False
+        if not provider["src"].startswith("https://"):
+            logger.error(
+                "EMBED_PROVIDERS entry ignored, src is not https: %s", provider["id"]
+            )
+            return False
+        try:
+            re.compile(provider["pattern"])
+        except re.error:
+            logger.error(
+                "EMBED_PROVIDERS entry ignored, pattern does not compile: %s",
+                provider["id"],
+            )
+            return False
+        return True
 
 
 class Base(Configuration):
