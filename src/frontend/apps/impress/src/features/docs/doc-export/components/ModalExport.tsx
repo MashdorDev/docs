@@ -22,7 +22,12 @@ import { fallbackLng } from '@/i18n/config';
 import { safeLocalStorage } from '@/utils/storages';
 
 import ModulesExport from '../hooks/';
-import { downloadFile, getExportFilename } from '../utils';
+import {
+  downloadFile,
+  getExportFilename,
+  interlinksToLinks,
+  resolveInterlinkTitles,
+} from '../utils';
 import { expandDocChildrenBlocks } from '../utils_doc_children';
 import {
   addMediaFilesToZip,
@@ -144,9 +149,14 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
 
       if (!blobExport && format === 'markdown') {
         const zip = new JSZip();
-        const blocks = await expandDocChildrenBlocks(
+        const expanded = await expandDocChildrenBlocks(
           structuredClone(sourceBlocks),
           doc.id,
+        );
+        const blocks = interlinksToLinks(
+          expanded,
+          await resolveInterlinkTitles(expanded),
+          window.location.origin,
         );
 
         const mediaFileCount = await addMediaFilesToMarkdownZip(
@@ -170,8 +180,13 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
 
       if (!blobExport && format === 'html') {
         // Use BlockNote "full HTML" export so that we stay closer to the editor rendering.
+        const expanded = await expandDocChildrenBlocks(sourceBlocks, doc.id);
         const fullHtml = editor.blocksToFullHTML(
-          await expandDocChildrenBlocks(sourceBlocks, doc.id),
+          interlinksToLinks(
+            expanded,
+            await resolveInterlinkTitles(expanded),
+            window.location.origin,
+          ),
         );
 
         // Parse HTML and fetch media so that we can package a fully offline HTML document in a ZIP.

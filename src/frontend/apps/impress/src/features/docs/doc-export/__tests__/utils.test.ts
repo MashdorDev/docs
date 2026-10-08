@@ -1,7 +1,7 @@
 import { Canvg } from 'canvg';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { convertBlobToPng, convertSvgToPng } from '../utils';
+import { convertBlobToPng, convertSvgToPng, interlinksToLinks } from '../utils';
 
 // Canvg uses canvas internally, which jsdom doesn't support. Mock it so we
 // can verify the arguments it receives without actually rendering.
@@ -147,5 +147,74 @@ describe('convertSvgToPng', () => {
     await convertSvgToPng('<svg width="100" height="50"></svg>');
 
     expect(svgInstance().render).toHaveBeenCalled();
+  });
+});
+
+describe('interlinksToLinks', () => {
+  const interlink = (docId: string) => ({
+    type: 'interlinkingLinkInline',
+    props: { docId, blockId: '', disabled: false, trigger: '/' },
+  });
+  const titles = new Map([['doc-1', 'First doc']]);
+
+  it('turns interlinks into titled links, in nested blocks and tables', () => {
+    const blocks = [
+      {
+        type: 'paragraph',
+        content: [
+          { type: 'text', text: 'See ', styles: {} },
+          interlink('doc-1'),
+        ],
+        children: [
+          {
+            type: 'bulletListItem',
+            content: [interlink('doc-2')],
+            children: [],
+          },
+        ],
+      },
+      {
+        type: 'table',
+        content: {
+          type: 'tableContent',
+          rows: [
+            { cells: [{ type: 'tableCell', content: [interlink('doc-1')] }] },
+          ],
+        },
+        children: [],
+      },
+    ];
+
+    const result = interlinksToLinks(blocks, titles, 'https://docs.example');
+
+    expect(result[0].content).toEqual([
+      { type: 'text', text: 'See ', styles: {} },
+      {
+        type: 'link',
+        href: 'https://docs.example/docs/doc-1/',
+        content: [{ type: 'text', text: 'First doc', styles: {} }],
+      },
+    ]);
+    // A doc whose title could not be resolved keeps its URL as the label.
+    expect(result[0].children[0].content).toEqual([
+      {
+        type: 'link',
+        href: 'https://docs.example/docs/doc-2/',
+        content: [{ type: 'text', text: '/docs/doc-2/', styles: {} }],
+      },
+    ]);
+    expect(result[1].content).toMatchObject({
+      rows: [{ cells: [{ content: [{ type: 'link' }] }] }],
+    });
+  });
+
+  it('leaves the input blocks untouched', () => {
+    const blocks = [
+      { type: 'paragraph', content: [interlink('doc-1')], children: [] },
+    ];
+
+    interlinksToLinks(blocks, titles, 'https://docs.example');
+
+    expect(blocks[0].content[0]).toEqual(interlink('doc-1'));
   });
 });

@@ -100,6 +100,79 @@ export async function resolveInterlinkTitles(
 }
 
 /**
+ * Replaces every `interlinkingLinkInline` node with a plain link to the doc,
+ * labelled with its resolved title. Markdown and HTML exports render inline
+ * content through React, where the interlink reads its title from a query
+ * that has not resolved yet: any doc the user had not opened came out blank.
+ */
+export function interlinksToLinks<T>(
+  blocks: T[],
+  titles: Map<string, string>,
+  origin: string,
+): T[] {
+  const convertInline = (content: unknown[]): unknown[] =>
+    content.map((item) => {
+      if (
+        !isRecord(item) ||
+        item.type !== 'interlinkingLinkInline' ||
+        !isRecord(item.props) ||
+        typeof item.props.docId !== 'string' ||
+        !item.props.docId
+      ) {
+        return item;
+      }
+      const docId = item.props.docId;
+      return {
+        type: 'link',
+        href: `${origin}/docs/${docId}/`,
+        content: [
+          {
+            type: 'text',
+            text: titles.get(docId) ?? `/docs/${docId}/`,
+            styles: {},
+          },
+        ],
+      };
+    });
+
+  const convertBlocks = (items: unknown[]): unknown[] =>
+    items.map((block) => {
+      if (!isRecord(block)) {
+        return block;
+      }
+      let content = block.content;
+      if (Array.isArray(content)) {
+        content = convertInline(content);
+      } else if (isRecord(content) && Array.isArray(content.rows)) {
+        content = {
+          ...content,
+          rows: content.rows.map((row) =>
+            isRecord(row) && Array.isArray(row.cells)
+              ? {
+                  ...row,
+                  cells: row.cells.map((cell) =>
+                    isRecord(cell) && Array.isArray(cell.content)
+                      ? { ...cell, content: convertInline(cell.content) }
+                      : cell,
+                  ),
+                }
+              : row,
+          ),
+        };
+      }
+      return {
+        ...block,
+        content,
+        ...(Array.isArray(block.children)
+          ? { children: convertBlocks(block.children) }
+          : {}),
+      };
+    });
+
+  return convertBlocks(blocks) as T[];
+}
+
+/**
  * Converts a document title into a safe filename for exported files.
  */
 export function getExportFilename(title: string): string {
