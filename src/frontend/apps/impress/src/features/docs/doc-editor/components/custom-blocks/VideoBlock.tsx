@@ -11,11 +11,13 @@ import {
   ResizableFileBlockWrapper,
   createReactBlockSpec,
 } from '@blocknote/react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createGlobalStyle } from 'styled-components';
 
 import { Box } from '@/components';
-import { parseEmbedUrl } from '@/utils/embed';
+import { useConfig } from '@/core';
+import { parseEmbedUrl, providersFromConfig } from '@/utils/embed';
 import { isSafeUrl } from '@/utils/url';
 
 import Warning from '../../assets/warning.svg';
@@ -61,6 +63,11 @@ interface VideoBlockComponentProps {
 
 const VideoBlockComponent = ({ editor, block }: VideoBlockComponentProps) => {
   const { t } = useTranslation();
+  const { data: config } = useConfig();
+  const configuredProviders = useMemo(
+    () => providersFromConfig(config?.EMBED_PROVIDERS),
+    [config?.EMBED_PROVIDERS],
+  );
   const url = block.props.url;
 
   // Only flag a URL as invalid once one has actually been entered. An empty
@@ -82,7 +89,7 @@ const VideoBlockComponent = ({ editor, block }: VideoBlockComponentProps) => {
     );
   }
 
-  const { kind, src } = parseEmbedUrl(url);
+  const { kind, src } = parseEmbedUrl(url, configuredProviders);
 
   return (
     <>

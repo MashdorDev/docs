@@ -9,6 +9,7 @@ import type { Theme } from '@/cunningham/';
 import type { FooterType } from '@/features/footer';
 import { HeaderType } from '@/features/left-panel/types';
 import type { PostHogConf } from '@/services/PosthogAnalytic';
+import type { ConfiguredEmbedProvider } from '@/utils/embed';
 
 type Imagetype = React.ComponentProps<typeof Image>;
 
@@ -57,6 +58,7 @@ export interface ConfigResponse {
   CONVERSION_UPLOAD_ENABLED?: boolean;
   DOCUMENT_IMAGE_MAX_SIZE?: number;
   DUPLICATE_CHILDREN_FEATURE_ENABLED?: boolean;
+  EMBED_PROVIDERS?: ConfiguredEmbedProvider[];
   ENVIRONMENT: string;
   FRONTEND_CSS_URL?: string;
   FRONTEND_HOMEPAGE_FEATURE_ENABLED?: boolean;

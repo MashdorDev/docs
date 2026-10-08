@@ -8,6 +8,7 @@ and this project adheres to
 
 ### Fork
 
+- ✨(frontend) add instance-configured embed providers to the video block
 - ✨(frontend) detect and embed YouTube/Vimeo/Loom/Dailymotion in video block
 - ✨(frontend) add dark / light / system colour-mode switcher
 

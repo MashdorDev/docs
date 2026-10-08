@@ -60,47 +60,119 @@ const VIDEO_FILE_EXT_RE =
   /\.(mp4|webm|ogv|ogg|mov|m4v|avi|mkv)(?:\?.*)?(?:#.*)?$/i;
 
 /**
- * Detects whether a URL points at a known embed-style platform (YouTube,
- * Vimeo, Loom, Dailymotion) and returns an iframe-ready src. URLs that look
- * like direct video files, or are unrecognised, are returned as-is and
- * rendered through the native HTML5 `<video>` element.
+ * An embed provider turns a pasted URL into an iframe `src`, or returns null
+ * when the URL is not one of its own.
  */
-export function parseEmbedUrl(url: string): ParsedEmbed {
+export interface EmbedProvider {
+  id: string;
+  match: (url: string) => string | null;
+}
+
+/**
+ * A provider an instance adds through the backend `EMBED_PROVIDERS` setting:
+ * `pattern` is matched against the URL, and `{1}`..`{9}` in `src` take its
+ * groups.
+ */
+export interface ConfiguredEmbedProvider {
+  id: string;
+  pattern: string;
+  src: string;
+}
+
+const fromRegex =
+  (re: RegExp, buildSrc: (id: string) => string) => (url: string) => {
+    const match = url.match(re);
+    return match ? buildSrc(match[1]) : null;
+  };
+
+export const EMBED_PROVIDERS: EmbedProvider[] = [
+  {
+    id: 'youtube',
+    match: (url) => {
+      const id = getYouTubeId(url);
+      return id ? `https://www.youtube.com/embed/${id}` : null;
+    },
+  },
+  {
+    id: 'vimeo',
+    match: fromRegex(VIMEO_RE, (id) => `https://player.vimeo.com/video/${id}`),
+  },
+  {
+    id: 'loom',
+    match: fromRegex(LOOM_RE, (id) => `https://www.loom.com/embed/${id}`),
+  },
+  {
+    id: 'dailymotion',
+    match: fromRegex(
+      DAILYMOTION_RE,
+      (id) => `https://www.dailymotion.com/embed/video/${id}`,
+    ),
+  },
+];
+
+// Configured patterns come from the instance admin, but they still run on
+// every pasted URL: a cap keeps a careless pattern from stalling the editor
+// on a pathological input.
+const MAX_CONFIGURED_URL_LENGTH = 2048;
+
+/**
+ * Build providers from the backend config. An entry whose pattern does not
+ * compile, or whose src is not https, is skipped: the backend refuses them at
+ * startup, this only guards against a config served by something else.
+ */
+export function providersFromConfig(
+  configured: ConfiguredEmbedProvider[] | undefined,
+): EmbedProvider[] {
+  return (configured ?? []).flatMap(({ id, pattern, src }) => {
+    if (!src.startsWith('https://')) {
+      return [];
+    }
+    let re: RegExp;
+    try {
+      re = new RegExp(pattern);
+    } catch {
+      return [];
+    }
+    return [
+      {
+        id,
+        match: (url: string) => {
+          if (url.length > MAX_CONFIGURED_URL_LENGTH) {
+            return null;
+          }
+          const match = url.match(re);
+          if (!match) {
+            return null;
+          }
+          return src.replace(/\{([1-9])\}/g, (_, group: string) =>
+            encodeURIComponent(match[Number(group)] ?? ''),
+          );
+        },
+      },
+    ];
+  });
+}
+
+/**
+ * Detects whether a URL points at a known embed-style platform (the built-in
+ * providers, then any configured ones) and returns an iframe-ready src. URLs
+ * that look like direct video files, or are unrecognised, are returned as-is
+ * and rendered through the native HTML5 `<video>` element.
+ */
+export function parseEmbedUrl(
+  url: string,
+  extraProviders: EmbedProvider[] = [],
+): ParsedEmbed {
   const trimmed = (url || '').trim();
   if (!trimmed) {
     return { kind: 'video', src: '' };
   }
 
-  const ytId = getYouTubeId(trimmed);
-  if (ytId) {
-    return {
-      kind: 'iframe',
-      src: `https://www.youtube.com/embed/${ytId}`,
-    };
-  }
-
-  const vmMatch = trimmed.match(VIMEO_RE);
-  if (vmMatch) {
-    return {
-      kind: 'iframe',
-      src: `https://player.vimeo.com/video/${vmMatch[1]}`,
-    };
-  }
-
-  const loomMatch = trimmed.match(LOOM_RE);
-  if (loomMatch) {
-    return {
-      kind: 'iframe',
-      src: `https://www.loom.com/embed/${loomMatch[1]}`,
-    };
-  }
-
-  const dmMatch = trimmed.match(DAILYMOTION_RE);
-  if (dmMatch) {
-    return {
-      kind: 'iframe',
-      src: `https://www.dailymotion.com/embed/video/${dmMatch[1]}`,
-    };
+  for (const provider of [...EMBED_PROVIDERS, ...extraProviders]) {
+    const src = provider.match(trimmed);
+    if (src) {
+      return { kind: 'iframe', src };
+    }
   }
 
   if (VIDEO_FILE_EXT_RE.test(trimmed)) {
