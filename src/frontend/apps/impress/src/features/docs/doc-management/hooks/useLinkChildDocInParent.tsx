@@ -6,6 +6,16 @@ import { useDocStore, useProviderStore } from '../stores';
 
 const SYNC_TIMEOUT_MS = 3000;
 
+type BlockWithChildren = { type: string; children?: BlockWithChildren[] };
+
+// A sub-docs list already shows every sub-doc, new ones included: a link
+// added next to it would list the new sub-doc twice.
+const hasDocChildrenBlock = (blocks: BlockWithChildren[]): boolean =>
+  blocks.some(
+    (block) =>
+      block.type === 'docChildren' || hasDocChildrenBlock(block.children ?? []),
+  );
+
 /**
  * Resolves once the collaboration provider is synced, so an edit made right
  * before navigating away reaches the server instead of dying with the editor.
@@ -71,7 +81,11 @@ export const useLinkChildDocInParent = () => {
 
   return useCallback(
     async (parentId: string, childId: string, position: 'cursor' | 'end') => {
-      if (!editor?.isEditable || currentDoc?.id !== parentId) {
+      if (
+        !editor?.isEditable ||
+        currentDoc?.id !== parentId ||
+        hasDocChildrenBlock(editor.document)
+      ) {
         return;
       }
 
