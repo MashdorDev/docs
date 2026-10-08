@@ -7,7 +7,7 @@ import tempfile
 
 import pytest
 
-from impress.settings import Base, Production
+from impress.settings import Base, EmbedProvidersValue, Production
 
 
 def test_invalid_settings_oidc_email_configuration():
@@ -248,3 +248,35 @@ def test_settings_prometheus_db_metrics_can_be_disabled(monkeypatch, tmp_path):
     assert (
         test_settings.DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql"
     )
+
+
+def test_embed_providers_value_parses_json():
+    """EMBED_PROVIDERS comes from the environment as a JSON list."""
+    value = EmbedProvidersValue([])
+    providers = value.to_python(
+        '[{"id": "grist", "pattern": "^https://grist\\\\.example\\\\.com/(\\\\w+)$",'
+        ' "src": "https://grist.example.com/{1}?embed=true"}]'
+    )
+    assert providers == [
+        {
+            "id": "grist",
+            "pattern": r"^https://grist\.example\.com/(\w+)$",
+            "src": "https://grist.example.com/{1}?embed=true",
+        }
+    ]
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        '{"id": "grist"}',
+        '[{"id": "grist", "pattern": "x"}]',
+        '[{"id": "grist", "pattern": "x", "src": "http://grist.example.com/{1}"}]',
+        '[{"id": "grist", "pattern": "(", "src": "https://grist.example.com/{1}"}]',
+        "not json",
+    ],
+)
+def test_embed_providers_value_rejects_bad_entries(raw):
+    """A bad provider stops the startup instead of never matching."""
+    with pytest.raises(ValueError):
+        EmbedProvidersValue([]).to_python(raw)
