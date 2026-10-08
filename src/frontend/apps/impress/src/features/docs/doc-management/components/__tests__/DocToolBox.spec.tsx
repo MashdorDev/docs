@@ -89,6 +89,8 @@ const createDoc = (overrides: Partial<Doc> = {}): Doc => ({
     search: false,
     update: false,
     versions_list: false,
+    versions_destroy: false,
+    versions_retrieve: false,
   },
   ...overrides,
 });
