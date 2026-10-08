@@ -214,7 +214,7 @@ export const DocsCommentsStyle = createGlobalStyle<{
               }
 
               &:last-child {
-                background: white;
+                background: var(--c--contextuals--background--surface--primary);
                 border: 1px solid
                   var(--c--contextuals--border--surface--primary);
                 color: var(

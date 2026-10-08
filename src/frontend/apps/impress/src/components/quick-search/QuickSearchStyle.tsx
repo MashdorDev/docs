@@ -4,7 +4,7 @@ export const QuickSearchStyle = createGlobalStyle`
   .quick-search-container {
     [cmdk-root] {
       width: 100%;
-      background: #ffffff;
+      background: var(--c--contextuals--background--surface--primary);
       border-radius: 12px;
       overflow: hidden;
       transition: transform 100ms ease;
@@ -16,7 +16,7 @@ export const QuickSearchStyle = createGlobalStyle`
       border: none;
       width: 100%;
       font-size: 16px;
-      background: white;
+      background: var(--c--contextuals--background--surface--primary);
       outline: none;
       color: var(--c--contextuals--content--semantic--neutral--primary);
       border-radius: var(--c--globals--spacings--0);
