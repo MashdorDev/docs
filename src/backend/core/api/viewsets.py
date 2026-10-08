@@ -3135,6 +3135,7 @@ class ConfigView(drf.views.APIView):
             "CONVERSION_UPLOAD_ENABLED",
             "DOCUMENT_IMAGE_MAX_SIZE",
             "DUPLICATE_CHILDREN_FEATURE_ENABLED",
+            "EMBED_PROVIDERS",
             "ENVIRONMENT",
             "FRONTEND_CSS_URL",
             "FRONTEND_HOMEPAGE_FEATURE_ENABLED",

@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+import json
 import os
+import re
 import tomllib
 from socket import gethostbyname, gethostname
 
@@ -48,6 +50,44 @@ def get_release():
         return pyproject_data["project"]["version"]
     except FileNotFoundError, KeyError:
         return "NA"  # Default: not available
+
+
+class EmbedProvidersValue(values.Value):
+    """
+    Extra embed providers for the video block, as a JSON list of
+    {"id", "pattern", "src"}: "pattern" is a regex matched against the pasted
+    URL and "src" an https iframe URL where {1}..{9} take the regex groups.
+
+    A bad entry stops the startup: an embed that silently never matches is
+    harder to notice than a server that does not boot.
+    """
+
+    def to_python(self, value):
+        try:
+            providers = json.loads(value) if isinstance(value, str) else value
+        except json.JSONDecodeError as err:
+            raise ValueError(f"EMBED_PROVIDERS is not valid JSON: {err}") from err
+        if not isinstance(providers, list):
+            raise ValueError("EMBED_PROVIDERS must be a JSON list")
+        for provider in providers:
+            if not isinstance(provider, dict) or not all(
+                isinstance(provider.get(key), str) and provider[key]
+                for key in ("id", "pattern", "src")
+            ):
+                raise ValueError(
+                    f"EMBED_PROVIDERS entries need a string id, pattern and src: {provider!r}"
+                )
+            if not provider["src"].startswith("https://"):
+                raise ValueError(
+                    f"EMBED_PROVIDERS src must be an https URL: {provider['id']}"
+                )
+            try:
+                re.compile(provider["pattern"])
+            except re.error as err:
+                raise ValueError(
+                    f"EMBED_PROVIDERS pattern does not compile: {provider['id']}"
+                ) from err
+        return providers
 
 
 class Base(Configuration):
@@ -203,6 +243,13 @@ class Base(Configuration):
     DOCUMENT_IMAGE_MAX_SIZE = values.IntegerValue(
         10 * MB,  # 10MB
         environ_name="DOCUMENT_IMAGE_MAX_SIZE",
+        environ_prefix=None,
+    )
+
+    # Video block embeds added to the built-in YouTube, Vimeo, Loom and Dailymotion
+    EMBED_PROVIDERS = EmbedProvidersValue(
+        [],
+        environ_name="EMBED_PROVIDERS",
         environ_prefix=None,
     )
 

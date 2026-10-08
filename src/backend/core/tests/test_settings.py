@@ -4,7 +4,7 @@ Unit tests for the User model
 
 import pytest
 
-from impress.settings import Base
+from impress.settings import Base, EmbedProvidersValue
 
 
 def test_invalid_settings_oidc_email_configuration():
@@ -64,3 +64,35 @@ def test_settings_psycopg_pool_enabled(monkeypatch):
             "timeout": 3,
         }
     }
+
+
+def test_embed_providers_value_parses_json():
+    """EMBED_PROVIDERS comes from the environment as a JSON list."""
+    value = EmbedProvidersValue([])
+    providers = value.to_python(
+        '[{"id": "grist", "pattern": "^https://grist\\\\.example\\\\.com/(\\\\w+)$",'
+        ' "src": "https://grist.example.com/{1}?embed=true"}]'
+    )
+    assert providers == [
+        {
+            "id": "grist",
+            "pattern": r"^https://grist\.example\.com/(\w+)$",
+            "src": "https://grist.example.com/{1}?embed=true",
+        }
+    ]
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        '{"id": "grist"}',
+        '[{"id": "grist", "pattern": "x"}]',
+        '[{"id": "grist", "pattern": "x", "src": "http://grist.example.com/{1}"}]',
+        '[{"id": "grist", "pattern": "(", "src": "https://grist.example.com/{1}"}]',
+        "not json",
+    ],
+)
+def test_embed_providers_value_rejects_bad_entries(raw):
+    """A bad provider stops the startup instead of never matching."""
+    with pytest.raises(ValueError):
+        EmbedProvidersValue([]).to_python(raw)

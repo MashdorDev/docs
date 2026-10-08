@@ -64,6 +64,7 @@ def test_api_config(is_authenticated):
         "CONVERSION_UPLOAD_ENABLED": False,
         "DOCUMENT_IMAGE_MAX_SIZE": 10485760,
         "DUPLICATE_CHILDREN_FEATURE_ENABLED": False,
+        "EMBED_PROVIDERS": [],
         "ENVIRONMENT": "test",
         "FRONTEND_CSS_URL": "http://testcss/",
         "FRONTEND_HOMEPAGE_FEATURE_ENABLED": True,
