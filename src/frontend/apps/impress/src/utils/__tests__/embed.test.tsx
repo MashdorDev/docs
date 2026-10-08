@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseEmbedUrl } from '@/utils/embed';
+import { parseEmbedUrl, providersFromConfig } from '@/utils/embed';
 
 describe('parseEmbedUrl', () => {
   describe('YouTube', () => {
@@ -116,5 +116,61 @@ describe('parseEmbedUrl', () => {
         src: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
       });
     });
+  });
+});
+
+describe('providersFromConfig', () => {
+  const grist = {
+    id: 'grist',
+    pattern: '^https://grist\\.example\\.com/o/docs/([A-Za-z0-9]+)',
+    src: 'https://grist.example.com/o/docs/{1}?embed=true',
+  };
+
+  it('embeds a configured provider after the built-ins', () => {
+    const providers = providersFromConfig([grist]);
+    expect(
+      parseEmbedUrl('https://grist.example.com/o/docs/abc123/Page', providers),
+    ).toEqual({
+      kind: 'iframe',
+      src: 'https://grist.example.com/o/docs/abc123?embed=true',
+    });
+  });
+
+  it('keeps built-in providers first', () => {
+    const providers = providersFromConfig([
+      { id: 'catch-all', pattern: '(.*)', src: 'https://evil.example/{1}' },
+    ]);
+    expect(parseEmbedUrl('https://youtu.be/dQw4w9WgXcQ', providers).src).toBe(
+      'https://www.youtube.com/embed/dQw4w9WgXcQ',
+    );
+  });
+
+  it('encodes captured groups into the src', () => {
+    const providers = providersFromConfig([
+      {
+        id: 'x',
+        pattern: '^https://x\\.example/(.+)$',
+        src: 'https://x.example/e/{1}',
+      },
+    ]);
+    expect(parseEmbedUrl('https://x.example/a"b<c', providers).src).toBe(
+      'https://x.example/e/a%22b%3Cc',
+    );
+  });
+
+  it('skips entries that are not https or do not compile', () => {
+    expect(
+      providersFromConfig([
+        { id: 'http', pattern: '(.*)', src: 'http://x.example/{1}' },
+        { id: 'broken', pattern: '(', src: 'https://x.example/{1}' },
+      ]),
+    ).toEqual([]);
+    expect(providersFromConfig(undefined)).toEqual([]);
+  });
+
+  it('ignores URLs longer than the cap', () => {
+    const providers = providersFromConfig([grist]);
+    const long = `https://grist.example.com/o/docs/abc?${'a'.repeat(3000)}`;
+    expect(parseEmbedUrl(long, providers).kind).toBe('video');
   });
 });
