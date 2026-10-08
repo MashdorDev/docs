@@ -14,17 +14,8 @@ import pytest
 from rest_framework.test import APIClient
 
 from core import factories, models
-from core.factories import YDOC_HELLO_WORLD_UPDATE
 
 pytestmark = pytest.mark.django_db
-
-
-@pytest.fixture(autouse=True, name="mock_yhub")
-def mock_yhub_fixture():
-    """The collaboration server holds the content of every document."""
-    with mock.patch("core.api.viewsets.YHubService") as mock_service:
-        mock_service.return_value.get_ydoc.return_value = YDOC_HELLO_WORLD_UPDATE
-        yield mock_service
 
 
 PATH_COLLISION = IntegrityError(
