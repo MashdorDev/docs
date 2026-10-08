@@ -17,27 +17,31 @@ const hasDocChildrenBlock = (blocks: BlockWithChildren[]): boolean =>
   );
 
 /**
- * Resolves once the collaboration provider is synced, so an edit made right
- * before navigating away reaches the server instead of dying with the editor.
+ * Resolves once the server has acknowledged every local change, so the link
+ * just inserted reaches it before navigating away disposes of the editor.
+ * `isSynced` is not enough: Hocuspocus sets it after the first sync and does
+ * not clear it on later edits, only its count of unsynced changes moves.
  */
-const waitForProviderSync = () =>
+const waitForPendingChanges = () =>
   new Promise<void>((resolve) => {
-    if (useProviderStore.getState().isSynced) {
+    const { provider } = useProviderStore.getState();
+    if (!provider?.hasUnsyncedChanges) {
       resolve();
       return;
     }
 
+    const onUnsyncedChanges = ({ number }: { number: number }) => {
+      if (number === 0) {
+        done();
+      }
+    };
     const done = () => {
       clearTimeout(timeout);
-      unsubscribe();
+      provider.off('unsyncedChanges', onUnsyncedChanges);
       resolve();
     };
     const timeout = setTimeout(done, SYNC_TIMEOUT_MS);
-    const unsubscribe = useProviderStore.subscribe((state) => {
-      if (state.isSynced) {
-        done();
-      }
-    });
+    provider.on('unsyncedChanges', onUnsyncedChanges);
   });
 
 /**
@@ -85,7 +89,7 @@ export const useLinkChildDocInParent = () => {
         }
       }
 
-      await waitForProviderSync();
+      await waitForPendingChanges();
     },
     [editor, currentDoc?.id],
   );

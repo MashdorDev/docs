@@ -1,3 +1,4 @@
+import { HocuspocusProvider } from '@hocuspocus/provider';
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -30,7 +31,7 @@ const mockEditor = (document: unknown[], isEditable = true) => {
 describe('useLinkChildDocInParent', () => {
   beforeEach(() => {
     useDocStore.setState({ currentDoc: { id: 'parent-id' } as Doc });
-    useProviderStore.setState({ isSynced: true });
+    useProviderStore.setState({ isSynced: true, provider: undefined });
   });
 
   it('inserts the link at the cursor', async () => {
@@ -81,9 +82,21 @@ describe('useLinkChildDocInParent', () => {
     expect(editor.insertInlineContent).not.toHaveBeenCalled();
   });
 
-  it('waits for the provider to sync before resolving', async () => {
+  it('waits for the server to acknowledge the link, even on an already synced provider', async () => {
     vi.useFakeTimers();
-    useProviderStore.setState({ isSynced: false });
+    const listeners: Array<(event: { number: number }) => void> = [];
+    const provider = {
+      isSynced: true,
+      hasUnsyncedChanges: true,
+      on: vi.fn((_: string, listener: (event: { number: number }) => void) =>
+        listeners.push(listener),
+      ),
+      off: vi.fn(),
+    };
+    useProviderStore.setState({
+      isSynced: true,
+      provider: provider as unknown as HocuspocusProvider,
+    });
     mockEditor([]);
     const { result } = renderHook(() => useLinkChildDocInParent());
 
@@ -94,8 +107,30 @@ describe('useLinkChildDocInParent', () => {
     await vi.advanceTimersByTimeAsync(100);
     expect(resolved).toBe(false);
 
-    useProviderStore.setState({ isSynced: true });
+    listeners.forEach((listener) => listener({ number: 0 }));
     await vi.advanceTimersByTimeAsync(0);
+    expect(resolved).toBe(true);
+    expect(provider.off).toHaveBeenCalledWith('unsyncedChanges', listeners[0]);
+    vi.useRealTimers();
+  });
+
+  it('gives up waiting after a few seconds so navigation is never stuck', async () => {
+    vi.useFakeTimers();
+    useProviderStore.setState({
+      provider: {
+        hasUnsyncedChanges: true,
+        on: vi.fn(),
+        off: vi.fn(),
+      } as unknown as HocuspocusProvider,
+    });
+    mockEditor([]);
+    const { result } = renderHook(() => useLinkChildDocInParent());
+
+    let resolved = false;
+    void result.current('parent-id', 'child-id', 'cursor').then(() => {
+      resolved = true;
+    });
+    await vi.advanceTimersByTimeAsync(3000);
     expect(resolved).toBe(true);
     vi.useRealTimers();
   });
