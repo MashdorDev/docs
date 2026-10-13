@@ -796,3 +796,68 @@ def test_external_api_documents_restore_can_be_allowed(
     document.refresh_from_db()
     assert document.deleted_at is None
     assert document.ancestors_deleted_at is None
+
+
+def test_external_api_documents_content_not_allowed(
+    user_token, resource_server_backend, user_specific_sub
+):
+    """
+    Connected users SHOULD NOT be allowed to replace the content of a document
+    from a resource server when the content action is not enabled.
+    """
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_token}")
+
+    document = factories.DocumentFactory(link_reach=models.LinkReachChoices.RESTRICTED)
+    factories.UserDocumentAccessFactory(
+        document=document, user=user_specific_sub, role=models.RoleChoices.OWNER
+    )
+
+    with patch("core.api.viewsets.YHubService") as mock_yhub:
+        response = client.put(
+            f"/external_api/v1.0/documents/{document.id!s}/content/",
+            {"content": "# Hello"},
+            format="json",
+        )
+
+    assert response.status_code == 403
+    mock_yhub.return_value.replace_ydoc.assert_not_called()
+
+
+@override_settings(
+    EXTERNAL_API={
+        "documents": {
+            "enabled": True,
+            "actions": ["list", "retrieve", "children", "content"],
+        },
+    }
+)
+@patch("core.services.converter_services.YdocConverter.convert")
+def test_external_api_documents_content_can_be_allowed(
+    mock_convert, user_token, resource_server_backend, user_specific_sub
+):
+    """
+    Connected users SHOULD be allowed to replace the content of a document from
+    a resource server when the content action is enabled in EXTERNAL_API settings.
+    """
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_token}")
+    mock_convert.return_value = b"\x01\x02converted"
+
+    document = factories.DocumentFactory(link_reach=models.LinkReachChoices.RESTRICTED)
+    factories.UserDocumentAccessFactory(
+        document=document, user=user_specific_sub, role=models.RoleChoices.EDITOR
+    )
+
+    with patch("core.api.viewsets.YHubService") as mock_yhub:
+        response = client.put(
+            f"/external_api/v1.0/documents/{document.id!s}/content/",
+            {"content": "# Hello"},
+            format="json",
+        )
+
+    assert response.status_code == 200
+    mock_yhub.assert_called_once_with(user=user_specific_sub)
+    mock_yhub.return_value.replace_ydoc.assert_called_once_with(
+        document, b"\x01\x02converted"
+    )
