@@ -11,6 +11,9 @@ from core.models import DocumentAccess, RoleChoices, get_trashbin_cutoff
 
 ACTION_FOR_METHOD_TO_PERMISSION = {
     "children": {"GET": "children_list", "POST": "children_create"},
+    # Writing the content is an update of the document, whoever may edit it may
+    # replace it.
+    "content": {"PUT": "partial_update"},
 }
 
 

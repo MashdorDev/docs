@@ -2582,6 +2582,54 @@ class DocumentViewSet(
 
     @drf.decorators.action(
         detail=True,
+        methods=["put"],
+        url_path="content",
+        name="Replace the content of a document",
+    )
+    def content(self, request, pk=None):
+        """
+        Replace the content of a document with the markdown sent as `content`.
+
+        The counterpart of `formatted_content` for writing: the markdown is
+        converted to Yjs and merged into the document on the collaboration
+        server, so an editor open on it picks up the change.
+        """
+        document = self.get_object()
+
+        markdown = request.data.get("content")
+        if not isinstance(markdown, str) or not markdown.strip():
+            raise drf.exceptions.ValidationError(
+                {"content": ["This field is required and may not be blank."]}
+            )
+
+        try:
+            update = Converter().convert(
+                markdown.encode("utf-8"), mime_types.MARKDOWN, mime_types.YJS
+            )
+        except YProviderValidationError as e:
+            return drf_response.Response(
+                {"error": str(e)}, status=status.HTTP_400_BAD_REQUEST
+            )
+        except ConversionError as e:
+            logger.error("Error converting content for document %s: %s", pk, e)
+            return drf_response.Response(
+                {"error": "Failed to convert document content"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        try:
+            YHubService(user=request.user).replace_ydoc(document, update)
+        except YHubError as e:
+            logger.error("Error saving content for document %s: %s", pk, e)
+            return drf_response.Response(
+                {"error": "Failed to save document content"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        return drf_response.Response({"id": str(document.id)})
+
+    @drf.decorators.action(
+        detail=True,
         methods=["post"],
     )
     def leave(self, request, *args, **kwargs):

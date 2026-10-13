@@ -1,12 +1,14 @@
 """Test yhub services."""
 
-from base64 import b64encode
+import json
+from base64 import b64decode, b64encode
 from unittest.mock import patch
 from uuid import uuid4
 
 from django.contrib.auth.models import AnonymousUser
 
 import jwt
+import pycrdt
 import pytest
 import requests
 
@@ -209,6 +211,63 @@ def test_create_ydoc_already_exists(mock_request):
         YHubService().create_ydoc(DOCUMENT, b"\x01\x02\x03\x04")
 
     assert excinfo.value.status_code == 409
+
+
+def _ydoc_with_text(text):
+    """Return the raw update of a document holding `text`, as an editor saves it."""
+    doc = pycrdt.Doc()
+    doc["document-store"] = fragment = pycrdt.XmlFragment()
+    fragment.children.append(pycrdt.XmlText(text))
+    return doc.get_update()
+
+
+@patch("requests.request")
+def test_replace_ydoc(mock_request):
+    """
+    Should delete the current blocks and apply the new content in one patch on
+    the built-in ydoc endpoint, so the history of the document is kept.
+    """
+    current = _ydoc_with_text("old content")
+    new = _ydoc_with_text("new content")
+    mock_request.return_value.ok = True
+    mock_request.return_value.json.return_value = {"doc": b64encode(current).decode()}
+    user = UserFactory.build()
+
+    YHubService(user=user).replace_ydoc(DOCUMENT, new)
+
+    assert mock_request.call_count == 2
+    args, kwargs = mock_request.call_args
+    assert args == (
+        "patch",
+        f"http://yhub:3002/collaboration/ydoc/v1/docs/{DOCUMENT.id!s}",
+    )
+    assert kwargs["headers"]["Content-Type"] == "application/json"
+    assert kwargs["headers"]["X-User-Id"] == str(user.pk)
+
+    # applied on top of what the server holds, the patch leaves only the new content
+    doc = pycrdt.Doc()
+    doc.apply_update(current)
+    doc.apply_update(b64decode(json.loads(kwargs["data"])["update"]))
+    assert str(doc.get("document-store", type=pycrdt.XmlFragment)) == "new content"
+
+
+@patch("requests.request")
+def test_replace_ydoc_without_content(mock_request):
+    """A document with no content yet should be seeded through create-ydoc."""
+    new = _ydoc_with_text("new content")
+    mock_request.return_value.ok = True
+    mock_request.return_value.json.return_value = {
+        "doc": b64encode(b"\x00\x00").decode()
+    }
+
+    YHubService().replace_ydoc(DOCUMENT, new)
+
+    args, kwargs = mock_request.call_args
+    assert args == (
+        "post",
+        f"http://yhub:3002/collaboration/create-ydoc/v1/docs/{DOCUMENT.id!s}",
+    )
+    assert kwargs["data"] == new
 
 
 @patch("requests.request")

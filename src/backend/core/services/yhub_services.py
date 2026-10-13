@@ -29,10 +29,12 @@ need them.
 """
 
 import base64
+import json
 import logging
 
 from django.conf import settings
 
+import pycrdt
 import requests
 
 from core.instrumentation import outgoing_request
@@ -295,6 +297,38 @@ class YHubService:
             data=update,
             headers={
                 "Content-Type": "application/octet-stream",
+                **self.build_user_header(self.user_id),
+            },
+        )
+
+    def replace_ydoc(self, document, update):
+        """
+        Replace the content of a document with the one carried by `update`.
+
+        The current blocks are deleted and `update` applied in the same patch,
+        rather than the document being reset: its history is kept, and an editor
+        open on it merges the change instead of writing its own copy back. A
+        document with no content yet is seeded with `create_ydoc`.
+        """
+        current = self.get_ydoc(document)
+        if current is None:
+            return self.create_ydoc(document, update)
+
+        ydoc = pycrdt.Doc()
+        ydoc.apply_update(current)
+        fragment = ydoc.get("document-store", type=pycrdt.XmlFragment)
+        state = ydoc.get_state()
+        with ydoc.transaction():
+            while len(fragment.children):
+                del fragment.children[0]
+        patch = pycrdt.merge_updates(ydoc.get_update(state), update)
+
+        return self.request(
+            "patch",
+            self.build_url("ydoc", document),
+            data=json.dumps({"update": base64.b64encode(patch).decode()}),
+            headers={
+                "Content-Type": "application/json",
                 **self.build_user_header(self.user_id),
             },
         )
