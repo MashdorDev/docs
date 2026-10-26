@@ -8,6 +8,7 @@ and this project adheres to
 
 ### Fork
 
+- 🐛(frontend) show right-to-left text from the right in the editor #732
 - ✨(backend) add an endpoint replacing a document's content from markdown
 - ✨(frontend) optionally include the document title in exports
 - ✨(frontend) add a /children block listing the sub-docs #2686
