@@ -13,6 +13,9 @@ WORKDIR /app
 # built from the repository root, like every other image here — the entrypoint
 # below lives outside this directory
 COPY ./src/yhub-server/package.json ./src/yhub-server/yarn.lock ./
+# fixes to @y/hub that are not released yet, applied by the postinstall of
+# every `yarn install` below
+COPY ./src/yhub-server/patches ./patches
 
 
 # ---- Dependencies + sources ----

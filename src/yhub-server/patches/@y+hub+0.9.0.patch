@@ -1,0 +1,43 @@
+diff --git a/node_modules/@y/hub/src/index.js b/node_modules/@y/hub/src/index.js
+index f0f90a1..a054bfc 100644
+--- a/node_modules/@y/hub/src/index.js
++++ b/node_modules/@y/hub/src/index.js
+@@ -208,6 +208,15 @@ export class YHub {
+         await this.stream.trimMessages(task.docRef, d.lastClock, this.stream.minMessageLifetime, task.redisClock)
+         return
+       }
++      // a reconnecting client re-sends its whole delete set in sync step 2, which is never
++      // empty once the document has deletions: the messages are new, the content is not.
++      // Persisting would only bump the document's clock and report an edit nobody made.
++      if (!d.hasNewContent) {
++        taskLog.debug('no new content in the stream, trimming only')
++        await this.stream.trimMessages(task.docRef, d.lastClock, this.stream.minMessageLifetime, task.redisClock)
++        taskLog.info('task completed (trim only)')
++        return
++      }
+       this.conf.worker?.events?.docUpdate?.(object.assign({}, d, { references: null, docRef: task.docRef }))
+       await this.persistence.store(task.docRef, d)
+       await promise.all([
+@@ -253,12 +262,14 @@ export class YHub {
+     const awareness = /** @type {Include['awareness'] extends true ? Uint8Array<ArrayBuffer> : null} */ (includeContent.awareness ? protocol.mergeAwarenessUpdates(cachedMessages.messages.filter(m => m.type === 'awareness:v1').map(m => m.update)) : null)
+     const lastClock = strm.maxRedisClock(persistedDoc.lastClock, cachedMessages.lastClock)
+     const mergedContentIds = Y.mergeContentIds(contentids)
++    let hasNewContent = false
+     cachedMessages.messages.forEach(m => {
+       // only add update messages that are newer that what we currently know
+       if (t.$updateMessage.check(m) && strm.isSmallerRedisClock(persistedDoc.lastClock, m.redisClock)) {
+         // attributions can only be assigned once. Filter out "known" attributions
+         const mcontentmap = Y.excludeContentMap(Y.decodeContentMap(m.contentmap), mergedContentIds)
+         const mcontentids = Y.createContentIdsFromContentMap(mcontentmap)
++        hasNewContent ||= !mcontentids.inserts.isEmpty() || !mcontentids.deletes.isEmpty()
+         Y.insertIntoIdSet(mergedContentIds.inserts, mcontentids.inserts)
+         Y.insertIntoIdSet(mergedContentIds.deletes, mcontentids.deletes)
+         gcDoc?.push(m.update)
+@@ -283,6 +294,7 @@ export class YHub {
+     }
+     const pruneBin = pruneSet != null ? Y.encodeIdSet(pruneSet) : undefined
+     return {
++      hasNewContent: hasNewContent || pruneSet != null,
+       gcDoc: /** @type {Include['gc'] extends true ? Uint8Array<ArrayBuffer> : null} */ (gcDoc ? await this.computePool.mergeUpdates(gcOnMerge, gcDoc, { docRef }) : null),
+       nongcDoc: /** @type {Include['nongc'] extends true ? Uint8Array<ArrayBuffer> : null} */ (nongcDoc ? await this.computePool.mergeUpdates(false, nongcDoc, { docRef }, pruneBin) : null),
+       contentmap: /** @type {Include['contentmap'] extends true ? Uint8Array<ArrayBuffer> : null} */ (mergedContentmap != null ? Y.encodeContentMap(mergedContentmap) : null),
